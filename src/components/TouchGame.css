@@ -1,0 +1,72 @@
+.touch-game {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 15px 30px;
+  font-size: 1.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 15px;
+  color: #666;
+  cursor: pointer;
+}
+
+.question {
+  font-size: 4rem;
+  color: #1565C0;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  max-width: 800px;
+  width: 100%;
+}
+
+.option-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(145deg, #81C784, #4CAF50);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+}
+
+.option-button:active {
+  transform: scale(0.95);
+}
+
+.option-emoji {
+  font-size: 7rem;
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+  background: linear-gradient(145deg, #EF9A9A, #E57373);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-20px) rotate(-5deg); }
+  40% { transform: translateX(20px) rotate(5deg); }
+  60% { transform: translateX(-20px) rotate(-5deg); }
+  80% { transform: translateX(20px) rotate(5deg); }
+}
