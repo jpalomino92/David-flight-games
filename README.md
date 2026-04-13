@@ -1,31 +1,33 @@
-David's PlayGround 🧸
+# David's PlayGround 🧸
+
 Offline educational games for children, designed for use on iPad during flights without an internet connection.
 
-🎮 Games
-🐶 Where is the Dog? – Tap the correct animal.
+## 🎮 Games
 
-🐝 Bee's Path – Drag the bee toward the flower.
+- **🐶 Where is the Dog?** – Tap the correct animal.
+- **🐝 Bee's Path** – Drag the bee toward the flower.
 
-⏱️ Features
-Parental Panel: Double tap on ⚙️ (top right corner).
+## ⏱️ Features
 
-Parental code: 1102
+- **Parental Panel**: Double tap on ⚙️ (top right corner)
+  - Parental code: **1102**
+  - Configurable timer (5/10/15/30 min or unlimited)
+  - Volume with lock option
+  - Usage report (last 7 days)
+  - Unlock code for when time expires
 
-Configurable timer (5/10/15/30 min or unlimited)
+## 🚀 Installation
 
-Volume with lock option
-
-Usage report (last 7 days)
-
-Unlock code for when time expires
-
-🚀 Installation
-Bash
+```bash
 npm install
 npm run dev
+
+
 📦 Build PWA
-Bash
+
+```bash
 npm run build
+
 Generates a dist/ folder ready to be deployed as an offline PWA.
 
 📱 Offline Use
