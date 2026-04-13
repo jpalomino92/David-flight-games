@@ -1,46 +1,42 @@
-# David's PlayGround 🧸
+David's PlayGround 🧸
+Offline educational games for children, designed for use on iPad during flights without an internet connection.
 
-Juegos educativos offline para niños, diseñado para usarse en iPad durante vuelos sin conexión a internet.
+🎮 Games
+🐶 Where is the Dog? – Tap the correct animal.
 
-## 🎮 Juegos
+🐝 Bee's Path – Drag the bee toward the flower.
 
-- **🐶 ¿Dónde está el perro?** - Tocar el animal correcto
-- **🐝 Camino de la abeja** - Arrastrar la abeja hacia la flor
+⏱️ Features
+Parental Panel: Double tap on ⚙️ (top right corner).
 
-## ⏱️ Funcionalidades
+Parental code: 1102
 
-- **Panel de Padres**: Doble tap en ⚙️ (esquina superior derecha)
-  - Código parental: **1102**
-  - Timer configurable (5/10/15/30 min o ilimitado)
-  - Volumen con opción de bloqueo
-  - Reporte de uso (últimos 7 días)
-  - Código para desbloquear cuando expire el tiempo
+Configurable timer (5/10/15/30 min or unlimited)
 
-## 🚀 Instalación
+Volume with lock option
 
-```bash
+Usage report (last 7 days)
+
+Unlock code for when time expires
+
+🚀 Installation
+Bash
 npm install
 npm run dev
-```
-
-## 📦 Build PWA
-
-```bash
+📦 Build PWA
+Bash
 npm run build
-```
+Generates a dist/ folder ready to be deployed as an offline PWA.
 
-Genera `dist/` listo para-deployar como PWA offline.
+📱 Offline Use
+The app works 100% offline thanks to a Service Worker using a CacheFirst strategy.
 
-## 📱 Uso Offline
+🛠️ Tech Stack
+React + Vite
 
-La app funciona 100% sin conexión gracias a Service Worker con estrategia CacheFirst.
+vite-plugin-pwa
 
-## 🛠️ Tech Stack
+react-confetti
 
-- React + Vite
-- vite-plugin-pwa
-- react-confetti
-
-## 📄 Licencia
-
+📄 License
 MIT
