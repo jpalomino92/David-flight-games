@@ -47,6 +47,18 @@
   cursor: pointer;
 }
 
+.exit-btn {
+  width: 100%;
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 1.2rem;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
 .parents-tabs {
   display: flex;
   gap: 10px;
@@ -268,16 +280,16 @@
 }
 
 .code-modal {
-  background: #FFF3E0;
+  background: #E3F2FD;
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 20px;
   text-align: center;
-  border: 3px solid #FF9800;
+  border: 3px solid #1976D2;
 }
 
 .code-modal h3 {
-  color: #E65100;
+  color: #1565C0;
   font-size: 1.5rem;
   margin-bottom: 10px;
 }

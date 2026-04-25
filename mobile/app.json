@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "David's PlayGround",
+    "slug": "davids-playground-mobile",
+    "scheme": "davidsplayground",
+    "version": "0.1.0",
+    "orientation": "default",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

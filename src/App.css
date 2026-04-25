@@ -130,3 +130,26 @@
   border-color: #1565C0;
   outline: none;
 }
+
+.code-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.code-buttons .code-cancel-btn {
+  flex: 1;
+  margin-top: 0;
+}
+
+.code-settings-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 1rem;
+  background: #1976D2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 0;
+}

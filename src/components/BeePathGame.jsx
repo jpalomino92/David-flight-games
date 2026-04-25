@@ -1,29 +1,71 @@
 import { useState, useRef, useEffect } from 'react'
 import Confetti from 'react-confetti'
 import { useGameConfig } from '../context/GameConfigContext'
+import { playSuccessSound } from '../core/audio/webAudio'
+import { useViewportSize } from '../core/browser/useViewportSize'
+import {
+  BEE_PATHS,
+  BEE_START_POSITION,
+  createBeePathMoveState,
+  createBeePathResetState,
+  getPointerPosition,
+  isNearBee,
+} from '../features/bee-path/logic'
+import { useBeePathWebInput } from '../features/bee-path/useBeePathWebInput'
 import './BeePathGame.css'
-
-const PATHS = [
-  { d: "M 10 50 Q 30 50 40 35 Q 50 20 65 35 Q 80 50 90 50", flower: { x: 0.9, y: 0.5 } },
-  { d: "M 10 50 Q 35 30 50 50 Q 65 70 90 50", flower: { x: 0.9, y: 0.5 } },
-  { d: "M 10 30 Q 40 40 50 30 Q 60 20 90 30", flower: { x: 0.9, y: 0.3 } }
-]
 
 function BeePathGame({ onBack }) {
   const { trackGameTime, timerExpired } = useGameConfig()
+  const { width, height } = useViewportSize()
   
-  const [beePos, setBeePos] = useState({ x: 0.1, y: 0.5 })
+  const [beePos, setBeePos] = useState(BEE_START_POSITION)
   const [flowerReached, setFlowerReached] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
   const [gameWon, setGameWon] = useState(false)
   const [gameStarted, setGameStarted] = useState(false)
   const [pathProgress, setPathProgress] = useState(0)
-  const [pathIndex, setPathIndex] = useState(() => Math.floor(Math.random() * PATHS.length))
+  const [pathIndex, setPathIndex] = useState(() => Math.floor(Math.random() * BEE_PATHS.length))
+  const currentPath = BEE_PATHS[pathIndex]
+  const flowerPos = currentPath.flower
   
   const containerRef = useRef(null)
-  const currentPath = PATHS[pathIndex]
-  const flowerPos = currentPath.flower
+  const hideConfettiTimeoutRef = useRef(null)
+  const beePosRef = useRef(BEE_START_POSITION)
+  const isDraggingRef = useRef(false)
+  const flowerReachedRef = useRef(false)
+  const gameStartedRef = useRef(false)
+  const gameWonRef = useRef(false)
+  const flowerPosRef = useRef(flowerPos)
+  const timerExpiredRef = useRef(timerExpired)
+
+  useEffect(() => {
+    beePosRef.current = beePos
+  }, [beePos])
+
+  useEffect(() => {
+    isDraggingRef.current = isDragging
+  }, [isDragging])
+
+  useEffect(() => {
+    flowerReachedRef.current = flowerReached
+  }, [flowerReached])
+
+  useEffect(() => {
+    gameStartedRef.current = gameStarted
+  }, [gameStarted])
+
+  useEffect(() => {
+    gameWonRef.current = gameWon
+  }, [gameWon])
+
+  useEffect(() => {
+    flowerPosRef.current = flowerPos
+  }, [flowerPos])
+
+  useEffect(() => {
+    timerExpiredRef.current = timerExpired
+  }, [timerExpired])
 
   useEffect(() => {
     if (gameStarted && !gameWon && !timerExpired) {
@@ -34,117 +76,95 @@ function BeePathGame({ onBack }) {
     }
   }, [gameStarted, gameWon, timerExpired, trackGameTime])
 
-  const getEventPos = (e) => {
-    const rect = containerRef.current.getBoundingClientRect()
-    if (e.touches && e.touches.length > 0) {
-      return {
-        x: (e.touches[0].clientX - rect.left) / rect.width,
-        y: (e.touches[0].clientY - rect.top) / rect.height
-      }
-    } else if (e.clientX !== undefined) {
-      return {
-        x: (e.clientX - rect.left) / rect.width,
-        y: (e.clientY - rect.top) / rect.height
-      }
-    }
-    return null
-  }
-
   const handleStart = (clientX, clientY) => {
-    if (gameWon || timerExpired) return
+    if (gameWonRef.current || timerExpiredRef.current) return
     
-    const pos = getEventPos({ clientX, clientY })
+    const pos = getPointerPosition(containerRef.current, { clientX, clientY })
     if (!pos) return
     
-    const distance = Math.sqrt(
-      Math.pow(pos.x - beePos.x, 2) + 
-      Math.pow(pos.y - beePos.y, 2)
-    )
-    
-    if (distance < 0.15) {
+    if (isNearBee(pos, beePosRef.current)) {
+      isDraggingRef.current = true
       setIsDragging(true)
-      if (!gameStarted) setGameStarted(true)
+      if (!gameStartedRef.current) {
+        gameStartedRef.current = true
+        setGameStarted(true)
+      }
     }
   }
 
   const handleMove = (clientX, clientY) => {
-    if (!isDragging || gameWon || timerExpired) return
+    if (!isDraggingRef.current || gameWonRef.current || timerExpiredRef.current) return
     
-    const pos = getEventPos({ clientX, clientY })
+    const pos = getPointerPosition(containerRef.current, { clientX, clientY })
     if (!pos) return
     
-    const clampedX = Math.max(0.05, Math.min(0.95, pos.x))
-    const clampedY = Math.max(0.1, Math.min(0.9, pos.y))
+    const moveState = createBeePathMoveState(pos, flowerPosRef.current)
+
+    setBeePos(moveState.beePosition)
     
-    setBeePos({ x: clampedX, y: clampedY })
-    
-    if (!flowerReached) {
-      const distance = Math.sqrt(
-        Math.pow(clampedX - flowerPos.x, 2) + 
-        Math.pow(clampedY - flowerPos.y, 2)
-      )
-      
-      if (distance < 0.06) {
-        setFlowerReached(true)
-        setGameWon(true)
+    if (!flowerReachedRef.current) {
+      if (moveState.flowerReached) {
+        flowerReachedRef.current = true
+        gameWonRef.current = moveState.gameWon
+        setFlowerReached(moveState.flowerReached)
+        setGameWon(moveState.gameWon)
         setShowConfetti(true)
-        setTimeout(() => setShowConfetti(false), 5000)
+        playSuccessSound()
+
+        if (hideConfettiTimeoutRef.current) {
+          clearTimeout(hideConfettiTimeoutRef.current)
+        }
+
+        hideConfettiTimeoutRef.current = setTimeout(() => {
+          setShowConfetti(false)
+        }, 5000)
       }
     }
     
-    const progress = Math.min(1, Math.max(0, (clampedX - 0.1) / 0.7))
-    setPathProgress(progress)
+    setPathProgress(moveState.pathProgress)
   }
 
   const handleEnd = () => {
+    isDraggingRef.current = false
     setIsDragging(false)
   }
 
+  useBeePathWebInput({
+    containerRef,
+    onStart: handleStart,
+    onMove: handleMove,
+    onEnd: handleEnd,
+  })
+
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-    
-    const onMouseDown = (e) => handleStart(e.clientX, e.clientY)
-    const onMouseMove = (e) => {
-      if (isDragging) handleMove(e.clientX, e.clientY)
-    }
-    const onMouseUp = () => handleEnd()
-    
-    const onTouchStart = (e) => {
-      e.preventDefault()
-      handleStart(e.touches[0].clientX, e.touches[0].clientY)
-    }
-    const onTouchMove = (e) => {
-      e.preventDefault()
-      if (isDragging) handleMove(e.touches[0].clientX, e.touches[0].clientY)
-    }
-    const onTouchEnd = () => handleEnd()
-    
-    container.addEventListener('mousedown', onMouseDown)
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    container.addEventListener('touchstart', onTouchStart, { passive: false })
-    container.addEventListener('touchmove', onTouchMove, { passive: false })
-    container.addEventListener('touchend', onTouchEnd)
-    
     return () => {
-      container.removeEventListener('mousedown', onMouseDown)
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-      container.removeEventListener('touchstart', onTouchStart)
-      container.removeEventListener('touchmove', onTouchMove)
-      container.removeEventListener('touchend', onTouchEnd)
+      if (hideConfettiTimeoutRef.current) {
+        clearTimeout(hideConfettiTimeoutRef.current)
+      }
     }
-  }, [isDragging, gameWon, timerExpired, flowerReached, beePos])
+  }, [])
 
   const resetGame = () => {
-    setBeePos({ x: 0.1, y: 0.5 })
-    setPathProgress(0)
-    setFlowerReached(false)
-    setGameWon(false)
-    setShowConfetti(false)
-    setGameStarted(false)
-    setPathIndex(Math.floor(Math.random() * PATHS.length))
+    const resetState = createBeePathResetState(pathIndex)
+
+    if (hideConfettiTimeoutRef.current) {
+      clearTimeout(hideConfettiTimeoutRef.current)
+      hideConfettiTimeoutRef.current = null
+    }
+
+    beePosRef.current = resetState.beePosition
+    isDraggingRef.current = resetState.isDragging
+    flowerReachedRef.current = resetState.flowerReached
+    gameStartedRef.current = resetState.gameStarted
+    gameWonRef.current = resetState.gameWon
+
+    setBeePos(resetState.beePosition)
+    setPathProgress(resetState.pathProgress)
+    setFlowerReached(resetState.flowerReached)
+    setGameWon(resetState.gameWon)
+    setShowConfetti(resetState.showConfetti)
+    setGameStarted(resetState.gameStarted)
+    setPathIndex(resetState.pathIndex)
   }
 
   return (
@@ -210,8 +230,8 @@ function BeePathGame({ onBack }) {
 
       {showConfetti && (
         <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
+          width={width}
+          height={height}
           numberOfPieces={100}
           recycle={false}
           gravity={0.2}
