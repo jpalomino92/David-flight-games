@@ -1,16 +1,12 @@
 import './Home.css'
+import { GAME_CATALOG } from '../features/home/gameCatalog'
 
 function Home({ onSelectGame }) {
-  const games = [
-    { id: 'touchGame', name: '🐶 ¿Dónde está el perro?', emoji: '🐶' },
-    { id: 'beePath', name: '🐝 Camino de la abeja', emoji: '🐝' },
-  ]
-
   return (
     <div className="home">
       <h1 className="home-title">David's PlayGround</h1>
       <div className="games-grid">
-        {games.map((game) => (
+        {GAME_CATALOG.map((game) => (
           <button
             key={game.id}
             className="game-button"

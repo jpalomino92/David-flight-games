@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
-
-const PARENTAL_CODE = '1102'
+import { PARENTAL_CODE, USAGE_STATS_STORAGE_KEY } from '../core/config/parental'
+import { buildUsageReport } from '../core/usage/reporting'
+import { readStorageJson, writeStorageJson } from '../core/browser/storage'
 
 const GameConfigContext = createContext()
 
@@ -11,16 +12,13 @@ export function GameConfigProvider({ children }) {
   const [volume, setVolume] = useState(80)
   const [volumeLocked, setVolumeLocked] = useState(false)
   const [parentsPanelOpen, setParentsPanelOpen] = useState(false)
-  const [usageStats, setUsageStats] = useState(() => {
-    const saved = localStorage.getItem('davidsPlayground_stats')
-    return saved ? JSON.parse(saved) : {}
-  })
+  const [usageStats, setUsageStats] = useState(() => readStorageJson(USAGE_STATS_STORAGE_KEY, {}))
   
   const timerIntervalRef = useRef(null)
   const activeGameRef = useRef(null)
 
   useEffect(() => {
-    localStorage.setItem('davidsPlayground_stats', JSON.stringify(usageStats))
+    writeStorageJson(USAGE_STATS_STORAGE_KEY, usageStats)
   }, [usageStats])
 
   const startTimer = (minutes) => {
@@ -83,30 +81,7 @@ export function GameConfigProvider({ children }) {
   }
 
   const getUsageReport = () => {
-    const last7Days = []
-    const today = new Date()
-    
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - i)
-      const dateStr = date.toISOString().split('T')[0]
-      last7Days.push({
-        date: dateStr,
-        label: date.toLocaleDateString('es', { weekday: 'short', day: 'numeric' }),
-        total: 0
-      })
-    }
-
-    const report = {}
-    Object.keys(usageStats).forEach(gameId => {
-      last7Days.forEach(day => {
-        const seconds = usageStats[gameId].dailyStats?.[day.date] || 0
-        if (!report[gameId]) report[gameId] = [...last7Days]
-        report[gameId].find(d => d.date === day.date).total += seconds
-      })
-    })
-
-    return report
+    return buildUsageReport(usageStats)
   }
 
   const value = {

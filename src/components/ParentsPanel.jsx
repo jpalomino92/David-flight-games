@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useGameConfig } from '../context/GameConfigContext'
 import './ParentsPanel.css'
+import { TIMER_OPTIONS, DEFAULT_UNLOCK_MINUTES, UNLOCK_MINUTE_OPTIONS } from '../core/config/parental'
+import { formatDurationShort, formatSecondsAsClock } from '../core/utils/formatters'
+import { getGameLabel } from '../features/home/gameCatalog'
 
 function ParentsPanel() {
   const {
@@ -18,31 +21,10 @@ function ParentsPanel() {
   } = useGameConfig()
 
   const [activeTab, setActiveTab] = useState('settings')
-  const [extendMinutes, setExtendMinutes] = useState(10)
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const formatUsage = (seconds) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    if (mins === 0) return `${secs}s`
-    return `${mins}m ${secs}s`
-  }
+  const [extendMinutes, setExtendMinutes] = useState(DEFAULT_UNLOCK_MINUTES)
 
   const usageReport = getUsageReport()
   const gamesReport = Object.keys(usageReport).length > 0 ? Object.entries(usageReport) : []
-
-  const timerOptions = [
-    { value: null, label: 'Sin límite' },
-    { value: 5, label: '5 min' },
-    { value: 10, label: '10 min' },
-    { value: 15, label: '15 min' },
-    { value: 30, label: '30 min' }
-  ]
 
   return (
     <div className="parents-panel-overlay">
@@ -74,7 +56,7 @@ function ParentsPanel() {
               <div className="timer-display">
                 {timerRemaining !== null ? (
                   <div className="timer-active">
-                    <span className="timer-time">{formatTime(timerRemaining)}</span>
+                    <span className="timer-time">{formatSecondsAsClock(timerRemaining)}</span>
                     <button className="timer-stop" onClick={stopTimer}>Detener</button>
                   </div>
                 ) : (
@@ -82,7 +64,7 @@ function ParentsPanel() {
                 )}
               </div>
               <div className="timer-options">
-                {timerOptions.map(opt => (
+                {TIMER_OPTIONS.map(opt => (
                   <button
                     key={opt.value ?? 'none'}
                     className={`timer-option ${timer === opt.value ? 'active' : ''}`}
@@ -127,10 +109,9 @@ function ParentsPanel() {
                     onChange={(e) => setExtendMinutes(Number(e.target.value))}
                     className="extend-select"
                   >
-                    <option value={5}>5 min</option>
-                    <option value={10}>10 min</option>
-                    <option value={15}>15 min</option>
-                    <option value={30}>30 min</option>
+                    {UNLOCK_MINUTE_OPTIONS.map((minutes) => (
+                      <option key={minutes} value={minutes}>{minutes} min</option>
+                    ))}
                   </select>
                   <button 
                     className="extend-btn"
@@ -151,17 +132,16 @@ function ParentsPanel() {
             ) : (
               gamesReport.map(([gameId, days]) => (
                 <div key={gameId} className="game-usage">
-                  <h4>{gameId === 'touchGame' ? '🐶 ¿Dónde está el perro?' : 
-                       gameId === 'beePath' ? '🐝 Camino de la abeja' : gameId}</h4>
+                  <h4>{getGameLabel(gameId)}</h4>
                   <div className="usage-chart">
                     {days.map(day => (
                       <div key={day.date} className="usage-day">
                         <div 
-                          className="usage-bar" 
-                          style={{ height: `${Math.min(day.total / 60 * 20, 100)}px` }}
-                        />
+                           className="usage-bar" 
+                           style={{ height: `${Math.min(day.total / 60 * 20, 100)}px` }}
+                         />
                         <span className="usage-label">{day.label}</span>
-                        <span className="usage-time">{formatUsage(day.total)}</span>
+                        <span className="usage-time">{formatDurationShort(day.total)}</span>
                       </div>
                     ))}
                   </div>
@@ -170,6 +150,13 @@ function ParentsPanel() {
             )}
           </div>
         )}
+        
+        <button 
+          className="exit-btn"
+          onClick={() => setParentsPanelOpen(false)}
+        >
+          ❌ Salir
+        </button>
       </div>
     </div>
   )

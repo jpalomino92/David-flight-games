@@ -1,34 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 import Confetti from 'react-confetti'
 import './TouchGame.css'
-
-const allAnimals = ['🐶', '🐱', '🦊', '🐻', '🐰', '🐼', '🦁', '🐯']
-
-function shuffleArray(array) {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return shuffled
-}
+import { createTouchGameRound, TOUCH_TARGET_ANIMAL } from '../features/touch-game/rounds'
+import { playSuccessSound, playWrongSound } from '../core/audio/webAudio'
+import { useViewportSize } from '../core/browser/useViewportSize'
 
 function TouchGame({ onBack }) {
   const [options, setOptions] = useState([])
-  const [correctAnswer, setCorrectAnswer] = useState('🐶')
+  const [correctAnswer, setCorrectAnswer] = useState(TOUCH_TARGET_ANIMAL)
   const [showConfetti, setShowConfetti] = useState(false)
   const [shakeButton, setShakeButton] = useState(null)
-  const [doubleTapReady, setDoubleTapReady] = useState(false)
+  const [correctButton, setCorrectButton] = useState(null)
   const backClickCount = useRef(0)
   const backClickTimer = useRef(null)
+  const { width, height } = useViewportSize()
 
   const generateNewRound = () => {
-    const otherAnimals = allAnimals.filter(a => a !== '🐶')
-    const shuffledOthers = shuffleArray(otherAnimals).slice(0, 3)
-    const roundOptions = shuffleArray(['🐶', ...shuffledOthers])
-    setOptions(roundOptions)
-    setCorrectAnswer('🐶')
+    const round = createTouchGameRound()
+    setOptions(round.options)
+    setCorrectAnswer(round.correctAnswer)
     setShowConfetti(false)
+    setCorrectButton(null)
   }
 
   useEffect(() => {
@@ -40,7 +32,6 @@ function TouchGame({ onBack }) {
     if (backClickCount.current === 1) {
       backClickTimer.current = setTimeout(() => {
         backClickCount.current = 0
-        setDoubleTapReady(false)
       }, 500)
     } else if (backClickCount.current === 2) {
       clearTimeout(backClickTimer.current)
@@ -53,11 +44,14 @@ function TouchGame({ onBack }) {
     if (showConfetti) return
 
     if (animal === correctAnswer) {
+      playSuccessSound()
+      setCorrectButton(animal)
       setShowConfetti(true)
       setTimeout(() => {
         generateNewRound()
       }, 3000)
     } else {
+      playWrongSound()
       setShakeButton(animal)
       setTimeout(() => setShakeButton(null), 500)
     }
@@ -75,7 +69,7 @@ function TouchGame({ onBack }) {
         {options.map((animal) => (
           <button
             key={animal}
-            className={`option-button ${shakeButton === animal ? 'shake' : ''}`}
+            className={`option-button ${shakeButton === animal ? 'shake' : ''} ${correctButton === animal ? 'correct' : ''}`}
             onClick={() => handleOptionClick(animal)}
           >
             <span className="option-emoji">{animal}</span>
@@ -85,8 +79,8 @@ function TouchGame({ onBack }) {
 
       {showConfetti && (
         <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
+          width={width}
+          height={height}
           numberOfPieces={80}
           recycle={false}
           gravity={0.2}

@@ -15,10 +15,10 @@
   left: 20px;
   padding: 15px 30px;
   font-size: 1.5rem;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(25, 118, 210, 0.15);
   border: none;
   border-radius: 15px;
-  color: #666;
+  color: #1565C0;
   cursor: pointer;
 }
 
@@ -44,14 +44,23 @@
   padding: 50px;
   border: none;
   border-radius: 30px;
-  background: linear-gradient(145deg, #81C784, #4CAF50);
+  background: linear-gradient(145deg, #42A5F5, #1976D2);
   cursor: pointer;
-  transition: transform 0.15s ease;
-  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+  transition: transform 0.15s ease, background 0.3s ease;
+  box-shadow: 0 8px 20px rgba(25, 118, 210, 0.4);
 }
 
 .option-button:active {
   transform: scale(0.95);
+}
+
+.option-button.correct {
+  background: linear-gradient(145deg, #81C784, #4CAF50);
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+}
+
+.option-button.shake {
+  background: linear-gradient(145deg, #EF9A9A, #E57373);
 }
 
 .option-emoji {
@@ -64,9 +73,20 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-20px) rotate(-5deg); }
-  40% { transform: translateX(20px) rotate(5deg); }
-  60% { transform: translateX(-20px) rotate(-5deg); }
-  80% { transform: translateX(20px) rotate(5deg); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-20px) rotate(-5deg);
+  }
+  40% {
+    transform: translateX(20px) rotate(5deg);
+  }
+  60% {
+    transform: translateX(-20px) rotate(-5deg);
+  }
+  80% {
+    transform: translateX(20px) rotate(5deg);
+  }
 }
